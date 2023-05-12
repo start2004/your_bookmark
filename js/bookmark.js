@@ -13,9 +13,17 @@ function main(){
     spiderSearch();
 
     /**
-     * @since 2023-05-10 加载快速复制框
+     * @since 2023-05-12 宽度不够的，不显示便签
      */
-    renderFastCopy(2);
+    var width = $("body").width();
+    if(width >= 1050){
+        /**
+         * @since 2023-05-10 加载快速复制框
+         */
+        renderFastCopy(2);
+    } else {
+        $("#top").hide();
+    }
 
     /**
      * @since 2023-05-12 显示顶部

@@ -1,7 +1,7 @@
 {
   "name": "你的书签",
   "description": "简洁，安全，流畅。简洁的收藏夹，平铺书签链接，方便找到想要访问的链接。所有数据本地存储，无网络存储数据，请放心使用。轻量级应用，1秒加载完成，流畅简洁，拒绝卡顿。",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "manifest_version": 3,
   "permissions": [
     "bookmarks",
