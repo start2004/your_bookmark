@@ -1,0 +1,111 @@
+#container {
+    width: 100%;
+    display: none;
+}
+
+#main{
+    padding-top: 10px;
+    padding-left: 100px;
+    padding-right: 40px;
+    float: left;
+    width: 100%;
+}
+
+.link_text{
+    font-size: 13px;
+    width: 80px;
+    height: 40px;
+    overflow-y: hidden;
+    margin-top: 5px;
+    text-align: center;
+}
+
+.none {
+    display: none;
+}
+
+.bg-color1{
+    /*background-color: #e0ffff;*/
+    background-color: white;
+}
+.bg-color2{
+    background-color: #FAFAFA;
+}
+
+.head{
+    height: 170px;
+    width: 100%;
+    background-image: linear-gradient(to bottom, #CCCCCC, #FAFAFA);
+    display: none;
+}
+
+.spider{
+    float: left;
+    margin-left: 100px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-text{
+    width: 320px;
+    vertical-align: middle;
+}
+
+.spider-btn{
+    margin-left: 20px;
+    vertical-align: middle;
+}
+
+.spider-btn ul li{
+    vertical-align: middle;
+    margin-top: 10px;
+}
+
+.spider-btn img{
+    cursor: pointer;
+}
+
+.top{
+    width: 300px;
+    /*height: 190px;*/
+    float: right;
+    /*margin-top: 10px;*/
+    /*margin-right: 10px;*/
+}
+
+.text-div{
+    float: left;
+    width: 300px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*height: 120px;*/
+}
+
+.bookmark-text{
+    width: 200px;
+    /*height: 150px;*/
+    float: left;
+}
+
+.bookmark-btn{
+    float: left;
+    vertical-align: middle;
+}
+
+.bookmark-image{
+    /*background: white;*/
+    /*margin: 5px;*/
+}
+
+.foot{
+    height: 100px;
+    float: left;
+    width: 100%;
+    text-align: center;
+    margin-top: 50px;
+    display: none;
+}
