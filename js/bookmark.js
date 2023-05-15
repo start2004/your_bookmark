@@ -20,7 +20,7 @@ function main(){
         /**
          * @since 2023-05-10 加载快速复制框
          */
-        renderFastCopy(2);
+        renderFastCopy(1);
     } else {
         $("#top").hide();
     }
@@ -54,27 +54,49 @@ function main(){
  */
 function spiderSearch(){
     /**
+     * @since 2023-05-15 做一些减法，不要什么功能都有
+     * @since 2023-05-15 不再缓存用户搜索内容
+     */
+    
+    /**
      * @since 2023-05-11 赋值
      */
-    var key = "bookmark-search-word";
-    var value = localStorage.getItem(key);
-    if(typeof value != "undefined"){
-        $("#search-word").val(value);
+    // var key = "bookmark-search-word";
+    // var value = localStorage.getItem(key);
+    // if(typeof value != "undefined"){
+    //     $("#search-word").val(value);
+    //
+    //     /**
+    //      * @since 2023-05-11 用户打开页面，马上在地址栏输入网址，就会抢用户光标的情况，然后回车就打开了google搜索页面的情况
+    //      */
+    //     // $("#search-word").select();
+    //     // $("#search-word").focus();
+    // } else {
+    //     // $("#search-word").focus();
+    // }
 
-        /**
-         * @since 2023-05-11 用户打开页面，马上在地址栏输入网址，就会抢用户光标的情况，然后回车就打开了google搜索页面的情况
-         */
-        // $("#search-word").select();
-        // $("#search-word").focus();
-    } else {
-        // $("#search-word").focus();
-    }
+    /**
+     * @since 2023-05-15 初始化搜索图标
+     */
+    var spiderObj = getSpider();
+
+    /**
+     * @since 2023-05-15 修改图片
+     */
+    $(".spider-btn img").attr("src", "image/"+ spiderObj.spider +"_128.png");
 
     /**
      * @since 2023-05-11 监听搜索图标
      */
     $(".spider-btn img").on("click", function() {
-        openSpiderURL(this.id, true);
+        openSpiderURL("", true);
+    });
+
+    /**
+     * @since 2023-05-15 监听其他搜索图标
+     */
+    $(".search-tip li").on("click", function() {
+        openSpiderURL(this.id, false);
     });
 
     /**
@@ -87,16 +109,89 @@ function spiderSearch(){
     });
 
     /**
+     * @since 2023-05-15 光标定位文本框
+     */
+    $("#search-word").on("focus", function () {
+        $(".search-tip").show();
+    });
+
+    /**
      * @since 2023-05-11 光标离开
      */
     $("#search-word").on("blur", function () {
-        var searchWord = $("#search-word").val();
+        setTimeout(function (){
+            $(".search-tip").hide();
+        }, 300);
+    });
+}
 
-        /**
-         * @since 2023-05-11 更新缓存
-         */
-        localStorage.setItem("bookmark-search-word", searchWord);
-    })
+/**
+ * @since 2023-05-15 获取搜索引擎名称
+ */
+function getSpider(){
+    /**
+     * @since 2023-05-15 读取缓存
+     */
+    var key = "bookmark-spider";
+    var spider = localStorage.getItem(key);
+    console.log(spider);
+
+    /**
+     * @since 2023-05-15 默认google
+     */
+    var spiderObj = {"spider":"", "url":"", "urlSearch":""};
+    switch (spider){
+        case "google":
+            url = "https://www.google.com/";
+            urlSearch = "https://www.google.com/search?q=";
+            break;
+        case "baidu":
+            url = "https://www.baidu.com/";
+            urlSearch = "https://www.baidu.com/s?wd=";
+            break;
+        case "sogou":
+            url = "https://sogou.com/";
+            urlSearch = "https://sogou.com/web?query=";
+            break;
+        case "so":
+            url = "https://www.so.com/";
+            urlSearch = "https://www.so.com/s?q=";
+            break;
+        case "bing":
+            url = "https://www.bing.com/";
+            urlSearch = "https://www.bing.com/search?q=";
+            break;
+        default:
+            spider = "google";
+            url = "https://www.google.com/";
+            urlSearch = "https://www.google.com/search?q=";
+    }
+    spiderObj.spider = spider;
+    spiderObj.url = url;
+    spiderObj.urlSearch = urlSearch;
+    console.log(spiderObj);
+
+    /**
+     * @return
+     */
+    return spiderObj;
+}
+
+/**
+ * @since 2023-05-15 设置搜索引擎
+ */
+function setSpider(spider){
+    var key = "bookmark-spider";
+
+    /**
+     * @since 2023-05-12 更新缓存
+     */
+    localStorage.setItem(key, spider);
+
+    /**
+     * @return
+     */
+    return getSpider();
 }
 
 /**
@@ -113,13 +208,19 @@ function openSpiderURL(spider, jump){
         /**
          * @since 2023-05-12 读取缓存
          */
-        var spider = localStorage.getItem(key);
+        var spiderObj = getSpider();
     } else {
         /**
          * @since 2023-05-12 更新缓存
          */
-        localStorage.setItem(key, spider);
+        var spiderObj = setSpider(spider);
     }
+    console.log(spiderObj);
+
+    /**
+     * @since 2023-05-15 修改图片
+     */
+    $(".spider-btn img").attr("src", "image/"+ spiderObj.spider +"_128.png");
 
     /**
      * @since 2023-05-11 关键词为空
@@ -127,57 +228,20 @@ function openSpiderURL(spider, jump){
     if(searchWord == ""){
         if(!jump){
             /**
-             * @since 2023-05-11 不跳转，光标离开事件
+             * @since 2023-05-11 不跳转，光标离开事件或点击图标，选择搜索引擎
              */
             return false;
         } else {
             /**
              * @since 2023-05-11 访问主页
              */
-            switch (spider){
-                case "google":
-                    url = "https://www.google.com/";
-                    break;
-                case "baidu":
-                    url = "https://www.baidu.com/";
-                    break;
-                case "sogou":
-                    url = "https://sogou.com/";
-                    break;
-                case "so":
-                    url = "https://www.so.com/";
-                    break;
-                case "bing":
-                    url = "https://www.bing.com/";
-                    break;
-                default:
-                    url = "https://www.google.com/";
-            }
+            var url = spiderObj.url;
         }
     } else {
         /**
          * @since 2023-05-11 打开搜索
          */
-        switch (spider){
-            case "google":
-                url = "https://www.google.com/search?q=";
-                break;
-            case "baidu":
-                url = "https://www.baidu.com/s?wd=";
-                break;
-            case "sogou":
-                url = "https://sogou.com/web?query=";
-                break;
-            case "so":
-                url = "https://www.so.com/s?q=";
-                break;
-            case "bing":
-                url = "https://www.bing.com/search?q=";
-                break;
-            default:
-                url = "https://www.google.com/search?q=";
-        }
-        url = url+ encodeURIComponent(searchWord);
+        var url = spiderObj.urlSearch+ encodeURIComponent(searchWord);
     }
 
     window.open(url);
@@ -398,7 +462,7 @@ function addBookmark(groupName, bookmarkArray){
 function improveChromeBookmark(bookmarkArray){
     var chromeArray = new Array(
         {
-                title: 'Chrome应用商店',
+                title: 'Chrome商店',
                 url: 'https://chrome.google.com/webstore/category/extensions?hl=zh-CN'
             },
             {
