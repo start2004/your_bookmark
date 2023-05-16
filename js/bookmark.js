@@ -16,7 +16,7 @@ function main(){
      * @since 2023-05-12 宽度不够的，不显示便签
      */
     var width = $("body").width();
-    if(width >= 1050){
+    if(width >= 900){
         /**
          * @since 2023-05-10 加载快速复制框
          */
@@ -112,7 +112,7 @@ function spiderSearch(){
      * @since 2023-05-15 光标定位文本框
      */
     $("#search-word").on("focus", function () {
-        $(".search-tip").show();
+        $(".search-tip").fadeIn("slow");
     });
 
     /**
@@ -120,7 +120,7 @@ function spiderSearch(){
      */
     $("#search-word").on("blur", function () {
         setTimeout(function (){
-            $(".search-tip").hide();
+            $(".search-tip").fadeOut("slow");
         }, 300);
     });
 }
@@ -134,7 +134,7 @@ function getSpider(){
      */
     var key = "bookmark-spider";
     var spider = localStorage.getItem(key);
-    console.log(spider);
+    // console.log(spider);
 
     /**
      * @since 2023-05-15 默认google
@@ -169,7 +169,7 @@ function getSpider(){
     spiderObj.spider = spider;
     spiderObj.url = url;
     spiderObj.urlSearch = urlSearch;
-    console.log(spiderObj);
+    // console.log(spiderObj);
 
     /**
      * @return
@@ -297,13 +297,25 @@ function renderFastCopy(cnt){
     $(".bookmark-btn").on("click", function() {
         var i = this.id.substr(-1,1);
         var key = "bookmark-text" +i;
-        updateStorage(key);
+        var value = $("#"+ key).val();
 
         /**
          * @since 2023-05-10 复制信息
          */
         $("#"+ key).select();
         document.execCommand('copy');
+
+        /**
+         * @since 2023-05-16 不为空操作
+         */
+        if(value != ""){
+            showCopyTip("复制成功");
+        } else {
+            /**
+             * @since 2023-05-16 文本框为空
+             */
+            showCopyTip("便签无数据");
+        }
     });
 }
 
@@ -311,9 +323,33 @@ function renderFastCopy(cnt){
  * @since 2023-05-10 更新缓存
  */
 function updateStorage(key){
-    var value = $("#"+ key).val();
-    localStorage.setItem(key, value);
+    var setValue = $("#"+ key).val();
+    var cacheValue = localStorage.getItem(key);
+
+    if(setValue != cacheValue){
+        if(setValue == ""){
+            showCopyTip("便签已清空");
+        } else {
+            showCopyTip("便签已保存");
+        }
+        localStorage.setItem(key, setValue);
+    } else {}
     // console.log("set "+ key +" =", value);
+}
+
+/**
+ * @since 2023-05-16 显示提示信息
+ */
+function showCopyTip(text){
+    $(".copy-tip").html(text);
+    $(".copy-tip").show();
+
+    /**
+     * @since 2023-05-16 延迟关闭
+     */
+    setTimeout(function (){
+        $(".copy-tip").fadeOut("slow");
+    }, 1000);
 }
 
 /**
@@ -361,7 +397,7 @@ function processNode(node) {
     /**
      * @since 2023-05-10 监听a标签点击
      */
-    $("a").on("click", function() {
+    $("#main a").on("click", function() {
         url = this.href;
         if(url.substr(0, 4) == "http"){
             return true;
@@ -369,6 +405,15 @@ function processNode(node) {
             chrome.tabs.create({ url: url });
             return false;
         }
+    });
+
+    /**
+     * @since 2023-05-16 鼠标放上，修改背景图突出
+     */
+    $("#main li").hover(function() {
+        $(this).css("background-color","#e0ffff");
+    }, function (){
+        $(this).css("background-color","white");
     });
 
     /**
