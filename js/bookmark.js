@@ -215,7 +215,7 @@ function openSpiderURL(spider, jump){
          */
         var spiderObj = setSpider(spider);
     }
-    console.log(spiderObj);
+    // console.log(spiderObj);
 
     /**
      * @since 2023-05-15 修改图片
