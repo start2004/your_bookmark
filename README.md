@@ -8,7 +8,7 @@
 
 ### 多个搜索引擎
 
-一步即达。省去先选择搜索引擎，再点击搜索按钮
+提供多种搜索引擎，方便快捷
 
 ### 便签
 
@@ -16,4 +16,4 @@
 
 ![image](https://raw.githubusercontent.com/start2004/your_bookmark/main/review-image/440x280.png)
 
-![image](https://raw.githubusercontent.com/start2004/your_bookmark/main/review-image/1280x800-2.png)
+![image](https://raw.githubusercontent.com/start2004/your_bookmark/main/review-image/1280x800-1.png)
