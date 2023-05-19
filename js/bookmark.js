@@ -412,8 +412,14 @@ function processNode(node) {
      */
     $("#main li").hover(function() {
         $(this).css("background-color","#e0ffff");
+
+        $(this).find("div:eq(0)").css("display", "none");
+        $(this).find("div:eq(1)").css("height", "52px");
     }, function (){
         $(this).css("background-color","white");
+
+        $(this).find("div:eq(1)").css("height", "20px");
+        $(this).find("div:eq(0)").css("display", "");
     });
 
     /**
@@ -475,12 +481,15 @@ function addBookmark(groupName, bookmarkArray){
     /**
      * @since 2023-05-10 书签列表
      */
+    console.log(_bookmarkTemplateHtml_);
     var bookmarkHtmlArray = new Array();
     for(var key in bookmarkArray){
         var bookmarkHtml = _bookmarkTemplateHtml_.replace(new RegExp("{\\$url}", "g"), bookmarkArray[key].url);
         bookmarkHtml = bookmarkHtml.replace(new RegExp("{\\$icon}", "g"), bookmarkArray[key].icon);
         bookmarkHtml = bookmarkHtml.replace(new RegExp("{\\$title}", "g"), bookmarkArray[key].title);
         bookmarkHtml = bookmarkHtml.replace('[img', '<img');
+        bookmarkHtml = bookmarkHtml.replace(']</div>', '></div>');
+        // console.log(bookmarkHtml);
         bookmarkHtmlArray.push(bookmarkHtml);
     }
     html = bookmarkHtmlArray.join('');
