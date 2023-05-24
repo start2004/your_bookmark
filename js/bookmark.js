@@ -413,6 +413,9 @@ function processNode(node) {
     $("#main li").hover(function() {
         $(this).css("background-color","#e0ffff");
 
+        /**
+         * @since 2023-05-24 显示完整的文字信息
+         */
         $(this).find("div:eq(0)").css("display", "none");
         $(this).find("div:eq(1)").css("height", "52px");
     }, function (){
@@ -421,6 +424,12 @@ function processNode(node) {
         $(this).find("div:eq(1)").css("height", "20px");
         $(this).find("div:eq(0)").css("display", "");
     });
+
+
+    $("#bookmark").sortable({
+        revert: true
+    });
+    $("ul, li").disableSelection();
 
     /**
      * @since 2023-05-12 显示书签和底部
@@ -481,7 +490,6 @@ function addBookmark(groupName, bookmarkArray){
     /**
      * @since 2023-05-10 书签列表
      */
-    console.log(_bookmarkTemplateHtml_);
     var bookmarkHtmlArray = new Array();
     for(var key in bookmarkArray){
         var bookmarkHtml = _bookmarkTemplateHtml_.replace(new RegExp("{\\$url}", "g"), bookmarkArray[key].url);
