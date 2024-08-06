@@ -1,29 +1,23 @@
 /**
- * @since 2023-05-10 主调入口
+ * @since 2023-05-10 主入口
  */
-main();
+$(function(){
+    main();
+});
 
 /**
  * @since 2023-05-10 入口
  */
 function main(){
     /**
+     * @since 2024-08-02 title
+     */
+    $("title").text(chrome.i18n.getMessage("extension_name"));
+
+    /**
      * @since 2023-05-11 处理搜素框
      */
     spiderSearch();
-
-    /**
-     * @since 2023-05-12 宽度不够的，不显示便签
-     */
-    var width = $("body").width();
-    if(width >= 900){
-        /**
-         * @since 2023-05-10 加载快速复制框
-         */
-        renderFastCopy(1);
-    } else {
-        $("#top").hide();
-    }
 
     /**
      * @since 2023-05-12 显示顶部
@@ -54,31 +48,24 @@ function main(){
  */
 function spiderSearch(){
     /**
-     * @since 2023-05-15 做一些减法，不要什么功能都有
-     * @since 2023-05-15 不再缓存用户搜索内容
-     */
-    
-    /**
-     * @since 2023-05-11 赋值
-     */
-    // var key = "bookmark-search-word";
-    // var value = localStorage.getItem(key);
-    // if(typeof value != "undefined"){
-    //     $("#search-word").val(value);
-    //
-    //     /**
-    //      * @since 2023-05-11 用户打开页面，马上在地址栏输入网址，就会抢用户光标的情况，然后回车就打开了google搜索页面的情况
-    //      */
-    //     // $("#search-word").select();
-    //     // $("#search-word").focus();
-    // } else {
-    //     // $("#search-word").focus();
-    // }
-
-    /**
      * @since 2023-05-15 初始化搜索图标
      */
-    var spiderObj = getSpider();
+    let spiderObj = getSpider();
+    $(".search-text").attr("placeholder", chrome.i18n.getMessage("search_prompt"));
+
+    /**
+     * @since 2024-08-01 加载-更多搜索图标html
+     */
+    let htmlArray = new Array();
+    let spiderArray = chrome.i18n.getMessage("spider").split(",");
+    for(let i=0; i<spiderArray.length; i++){
+        let spider = spiderArray[i];
+        let html = '<li id="'+ spider +'" style="background-image: url(\'image/'+ spider +'_128.png\');" title="'+ chrome.i18n.getMessage(spider+ "_search") +'">'+ chrome.i18n.getMessage(spider) +'</li>';
+        htmlArray.push(html);
+    }
+    let html = '<ul class="list-inline">' + htmlArray.join('') + '</ul>';
+    $(".search-tip.img-rounded").html(html);
+    // $(".search-tip").show();
 
     /**
      * @since 2023-05-15 修改图片
@@ -132,44 +119,16 @@ function getSpider(){
     /**
      * @since 2023-05-15 读取缓存
      */
-    var key = "bookmark-spider";
-    var spider = localStorage.getItem(key);
-    // console.log(spider);
+    let key = "bookmark-spider";
+    let spider = localStorage.getItem(key);
 
     /**
      * @since 2023-05-15 默认google
      */
-    var spiderObj = {"spider":"", "url":"", "urlSearch":""};
-    switch (spider){
-        case "google":
-            url = "https://www.google.com/";
-            urlSearch = "https://www.google.com/search?q=";
-            break;
-        case "baidu":
-            url = "https://www.baidu.com/";
-            urlSearch = "https://www.baidu.com/s?wd=";
-            break;
-        case "sogou":
-            url = "https://sogou.com/";
-            urlSearch = "https://sogou.com/web?query=";
-            break;
-        case "so":
-            url = "https://www.so.com/";
-            urlSearch = "https://www.so.com/s?q=";
-            break;
-        case "bing":
-            url = "https://www.bing.com/";
-            urlSearch = "https://www.bing.com/search?q=";
-            break;
-        default:
-            spider = "google";
-            url = "https://www.google.com/";
-            urlSearch = "https://www.google.com/search?q=";
-    }
-    spiderObj.spider = spider;
-    spiderObj.url = url;
-    spiderObj.urlSearch = urlSearch;
-    // console.log(spiderObj);
+    if(chrome.i18n.getMessage(spider) == ""){
+        spider = "google";
+    } else {}
+    let spiderObj = {"spider":spider, "url":chrome.i18n.getMessage(spider +"_url"), "urlSearch":chrome.i18n.getMessage(spider +"_search_url")};
 
     /**
      * @return
@@ -181,7 +140,7 @@ function getSpider(){
  * @since 2023-05-15 设置搜索引擎
  */
 function setSpider(spider){
-    var key = "bookmark-spider";
+    let key = "bookmark-spider";
 
     /**
      * @since 2023-05-12 更新缓存
@@ -198,24 +157,21 @@ function setSpider(spider){
  * @since 2023-05-11 打开搜索页面
  */
 function openSpiderURL(spider, jump){
-    var searchWord = $("#search-word").val();
-
     /**
      * @since 2023-05-12 无指定搜索引擎
      */
-    var key = "bookmark-spider";
+    let spiderObj = {};
     if (spider == ""){
         /**
          * @since 2023-05-12 读取缓存
          */
-        var spiderObj = getSpider();
+        spiderObj = getSpider();
     } else {
         /**
          * @since 2023-05-12 更新缓存
          */
-        var spiderObj = setSpider(spider);
+        spiderObj = setSpider(spider);
     }
-    // console.log(spiderObj);
 
     /**
      * @since 2023-05-15 修改图片
@@ -225,6 +181,7 @@ function openSpiderURL(spider, jump){
     /**
      * @since 2023-05-11 关键词为空
      */
+    let searchWord = $("#search-word").val();
     if(searchWord == ""){
         if(!jump){
             /**
@@ -235,135 +192,30 @@ function openSpiderURL(spider, jump){
             /**
              * @since 2023-05-11 访问主页
              */
-            var url = spiderObj.url;
+            let url = spiderObj.url;
+            window.open(url);
         }
     } else {
         /**
          * @since 2023-05-11 打开搜索
          */
-        var url = spiderObj.urlSearch+ encodeURIComponent(searchWord);
+        let url = spiderObj.urlSearch + encodeURIComponent(searchWord);
+        window.open(url);
     }
-
-    window.open(url);
-}
-
-/**
- * @since 2023-05-11 渲染快速复制框
- */
-function renderFastCopy(cnt){
-    /**
-     * @since 2023-05-10 加载文本框
-     */
-    var textArray = new Array();
-    var html = $("#top").html();
-    for(var i=1, j=1; i<=cnt; i++){
-        var textHtml = html.replace(new RegExp("{\\$key}", "g"), i);
-        if(i%2==0){
-            j++;
-        } else {}
-        if(j%2==1){
-            textHtml = textHtml.replace(new RegExp("{\\$bg-color}", "g"), 'bg-color1');
-        } else {
-            textHtml = textHtml.replace(new RegExp("{\\$bg-color}", "g"), 'bg-color2');
-        }
-
-        textArray.push(textHtml);
-    }
-    html = textArray.join('');
-    $("#top").html(html);
-
-    /**
-     * @since 2023-05-10 赋值
-     */
-    for(var i=1; i<=cnt; i++){
-        /**
-         * @since 2023-05-10 文本框赋值
-         */
-        var key = "bookmark-text"+i;
-        var value = localStorage.getItem(key);
-        if(typeof value != "undefined"){
-            $("#"+ key).val(value);
-        }
-        // console.log("get "+ key +" =", value);
-    }
-
-    /**
-     * @since 2023-05-10 监听光标移开，点击复制相关按钮
-     */
-    $(".bookmark-text").on("blur", function() {
-        var key = this.id;
-        updateStorage(key);
-    });
-    $(".bookmark-btn").on("click", function() {
-        var i = this.id.substr(-1,1);
-        var key = "bookmark-text" +i;
-        var value = $("#"+ key).val();
-
-        /**
-         * @since 2023-05-10 复制信息
-         */
-        $("#"+ key).select();
-        document.execCommand('copy');
-
-        /**
-         * @since 2023-05-16 不为空操作
-         */
-        if(value != ""){
-            showCopyTip("复制成功");
-        } else {
-            /**
-             * @since 2023-05-16 文本框为空
-             */
-            showCopyTip("便签无数据");
-        }
-    });
-}
-
-/**
- * @since 2023-05-10 更新缓存
- */
-function updateStorage(key){
-    var setValue = $("#"+ key).val();
-    var cacheValue = localStorage.getItem(key);
-
-    if(setValue != cacheValue){
-        if(setValue == ""){
-            showCopyTip("便签已清空");
-        } else {
-            showCopyTip("便签已保存");
-        }
-        localStorage.setItem(key, setValue);
-    } else {}
-    // console.log("set "+ key +" =", value);
-}
-
-/**
- * @since 2023-05-16 显示提示信息
- */
-function showCopyTip(text){
-    $(".copy-tip").html(text);
-    $(".copy-tip").show();
-
-    /**
-     * @since 2023-05-16 延迟关闭
-     */
-    setTimeout(function (){
-        $(".copy-tip").fadeOut("slow");
-    }, 1000);
 }
 
 /**
  * @since 2023-05-09 处理书签
  */
 function processNode(node) {
-    var barArray = new Array();
-    var folderArray = new Array();
+    let barArray = new Array();
+    let folderArray = new Array();
 
-    for(var key in node){
+    for(let key in node){
         if(node[key].url){
             barArray.push(formatData(node[key]));
         } else {
-            var title = node[key].title;
+            let title = node[key].title;
             folderArray[title] = processNodeChild(node[key].children);
         }
     }
@@ -383,14 +235,12 @@ function processNode(node) {
     /**
      * @since 2023-05-10 固定书签栏
      */
-    // console.log(barArray);
-    _classToggle_ = true;
     addBookmark('', barArray);
 
     /**
      * @since 2023-05-10 其他书签文件夹
      */
-    for(var title in folderArray){
+    for(let title in folderArray){
         addBookmark(title, folderArray[title]);
     }
 
@@ -442,9 +292,9 @@ function processNode(node) {
  * @since 2023-05-09 处理书签栏的文件夹
  */
 function processNodeChild(node) {
-    var barArray = new Array();
+    let barArray = new Array();
 
-    for(var key in node){
+    for(let key in node){
         if(node[key].url){
             barArray.push(formatData(node[key]));
         } else {
@@ -461,8 +311,8 @@ function processNodeChild(node) {
  * @since 2023-05-09 格式化数据
  */
 function formatData(node){
-    var data = new Array();
-    var url = node.url;
+    let data = new Array();
+    let url = node.url;
     data.title = node.title;
     data.url = url;
 
@@ -470,15 +320,10 @@ function formatData(node){
      * @since 2023-05-09 处理图标
      * @since 2023-05-10 获取网站的favicon
      */
-    if (url == "chrome://settings/clearBrowserData"){
-        data.icon = "image/clear_128.png";
-    } else {
-        const chromeURL = new URL(chrome.runtime.getURL("/_favicon/"));
-        chromeURL.searchParams.set("pageUrl",url);
-        chromeURL.searchParams.set("size", "32");
-        data.icon = chromeURL.toString();
-    }
-
+    const chromeURL = new URL(chrome.runtime.getURL("/_favicon/"));
+    chromeURL.searchParams.set("pageUrl",url);
+    chromeURL.searchParams.set("size", "32");
+    data.icon = chromeURL.toString();
 
     return data;
 }
@@ -490,31 +335,22 @@ function addBookmark(groupName, bookmarkArray){
     /**
      * @since 2023-05-10 书签列表
      */
-    var bookmarkHtmlArray = new Array();
-    for(var key in bookmarkArray){
-        var bookmarkHtml = _bookmarkTemplateHtml_.replace(new RegExp("{\\$url}", "g"), bookmarkArray[key].url);
+    let bookmarkHtmlArray = new Array();
+    for(let key in bookmarkArray){
+        let bookmarkHtml = _bookmarkTemplateHtml_.replace(new RegExp("{\\$url}", "g"), bookmarkArray[key].url);
         bookmarkHtml = bookmarkHtml.replace(new RegExp("{\\$icon}", "g"), bookmarkArray[key].icon);
         bookmarkHtml = bookmarkHtml.replace(new RegExp("{\\$title}", "g"), bookmarkArray[key].title);
         bookmarkHtml = bookmarkHtml.replace('[img', '<img');
         bookmarkHtml = bookmarkHtml.replace(']</div>', '></div>');
-        // console.log(bookmarkHtml);
         bookmarkHtmlArray.push(bookmarkHtml);
     }
     html = bookmarkHtmlArray.join('');
-    // console.log(bookmarkHtmlArray, html);
 
     /**
      * @since 2023-05-10 添加html
      */
-    var mainHtml = _mainTemplateHtml_.replace(_bookmarkTemplateHtml_, html);
+    let mainHtml = _mainTemplateHtml_.replace(_bookmarkTemplateHtml_, html);
     mainHtml = mainHtml.replace('<h4>{$groupName}</h4>', "<h4>"+ groupName +"</h4>");
-    // if(_classToggle_){
-    //     _classToggle_ = false;
-    //     mainHtml = mainHtml.replace(new RegExp("{\\$bg-color}", "g"), 'bg-color1');
-    // } else {
-    //     _classToggle_ = true;
-    //     mainHtml = mainHtml.replace(new RegExp("{\\$bg-color}", "g"), 'bg-color2');
-    // }
     $("#container").append(mainHtml);
 }
 
@@ -522,46 +358,48 @@ function addBookmark(groupName, bookmarkArray){
  * @since 2023-05-10 增加Chrome浏览器系统地址
  */
 function improveChromeBookmark(bookmarkArray){
-    var chromeArray = new Array(
+    let chromeArray = new Array(
         {
-                title: 'Chrome商店',
-                url: 'https://chrome.google.com/webstore/category/extensions?hl=zh-CN'
+                title: chrome.i18n.getMessage("extension_store"),
+                url: chrome.i18n.getMessage("extension_store_url")
             },
             {
-                title: 'Chrome插件',
+                title: chrome.i18n.getMessage("extension"),
                 url: 'chrome://extensions/'
             },
             {
-                title: 'Chrome书签',
+                title: chrome.i18n.getMessage("favorites"),
                 url: 'chrome://bookmarks/'
             },
             {
-                title: 'Chrome应用',
+                title: chrome.i18n.getMessage("apps"),
                 url: 'chrome://apps/'
             },
             {
-                title: 'Chrome设置',
-                url: 'chrome://settings/'
-            },
-
-            {
-                title: '下载内容',
-                url: 'chrome://downloads/'
+                title: chrome.i18n.getMessage("settings"),
+                url: 'chrome://settings/profiles'
             },
             {
-                title: '历史记录',
-                url: 'chrome://history/'
+                title: chrome.i18n.getMessage("downloads"),
+                url: 'chrome://downloads'
             },
             {
-                title: '清除浏览数据',
+                title: chrome.i18n.getMessage("history"),
+                url: 'chrome://history'
+            },
+            {
+                title: chrome.i18n.getMessage("clear_browser_data"),
                 url: 'chrome://settings/clearBrowserData'
+            },
+            {
+                title: chrome.i18n.getMessage("version"),
+                url: 'chrome://settings/help'
             }
     );
 
-    for(var i=0; i<chromeArray.length; i=i+1){
+    for(let i=0; i<chromeArray.length; i=i+1){
         bookmarkArray.push(formatData(chromeArray[i]));
     }
-    // console.log(bookmarkArray);
 
     return bookmarkArray;
 }
