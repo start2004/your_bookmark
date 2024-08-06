@@ -1,6 +1,6 @@
 {
   "extension_name":{
-    "message": "你的收藏夹",
+    "message": "你的书签",
     "description": "扩展的名称"
   },
   "extension_description": {
@@ -8,7 +8,7 @@
     "description": "扩展的说明"
   },
   "action_default_title": {
-    "message": "打开你的收藏夹",
+    "message": "打开你的书签",
     "description": "鼠标移动到插件图标上，提示信息"
   },
   "spider": {
