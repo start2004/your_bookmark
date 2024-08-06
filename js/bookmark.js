@@ -121,11 +121,13 @@ function getSpider(){
      */
     let key = "bookmark-spider";
     let spider = localStorage.getItem(key);
+    console.log(spider);
 
     /**
+     * @since 2024-08-06 spider第一次不存在返回null
      * @since 2023-05-15 默认google
      */
-    if(chrome.i18n.getMessage(spider) == ""){
+    if(typeof spider !== "string" || chrome.i18n.getMessage(spider) == ""){
         spider = "google";
     } else {}
     let spiderObj = {"spider":spider, "url":chrome.i18n.getMessage(spider +"_url"), "urlSearch":chrome.i18n.getMessage(spider +"_search_url")};
