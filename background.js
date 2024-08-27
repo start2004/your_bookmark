@@ -20,7 +20,6 @@ chrome.runtime.onInstalled.addListener(function() {
 /**
  * @since 2024-08-26 监听下载事件
  */
-// background.js
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     if (message.type === "LoadIcon") {
         LoadIcon(message.payload);
