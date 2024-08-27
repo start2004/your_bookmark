@@ -2,22 +2,24 @@
  * @since 2023-05-10 主入口
  */
 $(function(){
-    main();
+    Main();
 });
 
 /**
- * @since 2023-05-10 入口
+ * @title 主函数
+ * @author start2004
+ * @since 2024-08-27
  */
-function main(){
+async function Main(){
     /**
-     * @since 2024-08-02 title
+     * @since 2024-08-02 首页title
      */
     $("title").text(chrome.i18n.getMessage("extension_name"));
 
     /**
      * @since 2023-05-11 处理搜素框
      */
-    spiderSearch();
+    await SpiderSearch();
 
     /**
      * @since 2023-05-12 显示顶部
@@ -25,65 +27,63 @@ function main(){
     $(".head").show();
 
     /**
-     * @since 2023-05-09 获取收藏夹数据
+     * @since 2024-08-27 处理书签信息
      */
-    chrome.bookmarks.getTree(function(itemTree){
-        itemTree.forEach(function(item){
-            if(item.children){
-                /**
-                 * @since 2023-05-09 仅处理书签栏
-                 */
-                processNode(item.children[0].children);
-            } else {}
-        });
-    });
+    await ShowBookmarks();
+
+    /**
+     * @since 2023-05-12 显示底部
+     */
+    $(".foot").show();
 }
 
 /**
+ * ===============================================================
+ * 分隔符
  * ===============================================================
  */
 
 /**
  * @since 2023-05-11 搜索框处理
  */
-function spiderSearch(){
+async function SpiderSearch(){
     /**
-     * @since 2023-05-15 初始化搜索图标
+     * @since 2023-05-15 搜索按钮的图片
      */
-    let spiderObj = getSpider();
+    const spiderObj = await GetSpider();
+    $(".spider-btn img").attr("src", "image/"+ spiderObj.spider +"_128.png");
+
+    /**
+     * @since 2023-05-15 搜索框的提示文字
+     */
     $(".search-text").attr("placeholder", chrome.i18n.getMessage("search_prompt"));
 
     /**
-     * @since 2024-08-01 加载-更多搜索图标html
+     * @since 2024-08-01 加载-更多搜索引擎选项div
      */
     let htmlArray = new Array();
-    let spiderArray = chrome.i18n.getMessage("spider").split(",");
+    const spiderArray = chrome.i18n.getMessage("spider").split(",");
     for(let i=0; i<spiderArray.length; i++){
         let spider = spiderArray[i];
         let html = '<li id="'+ spider +'" style="background-image: url(\'image/'+ spider +'_128.png\');" title="'+ chrome.i18n.getMessage(spider+ "_search") +'">'+ chrome.i18n.getMessage(spider) +'</li>';
         htmlArray.push(html);
     }
-    let html = '<ul class="list-inline">' + htmlArray.join('') + '</ul>';
+    const html = '<ul class="list-inline">' + htmlArray.join('') + '</ul>';
     $(".search-tip.img-rounded").html(html);
     // $(".search-tip").show();
-
-    /**
-     * @since 2023-05-15 修改图片
-     */
-    $(".spider-btn img").attr("src", "image/"+ spiderObj.spider +"_128.png");
 
     /**
      * @since 2023-05-11 监听搜索图标
      */
     $(".spider-btn img").on("click", function() {
-        openSpiderURL("", true);
+        OpenSpiderURL("", true);
     });
 
     /**
-     * @since 2023-05-15 监听其他搜索图标
+     * @since 2023-05-15 监听更多搜索引擎图标
      */
     $(".search-tip li").on("click", function() {
-        openSpiderURL(this.id, false);
+        OpenSpiderURL(this.id, false);
     });
 
     /**
@@ -91,19 +91,19 @@ function spiderSearch(){
      */
     $("#search-word").keydown(function(event) {
         if (event.keyCode == 13) {
-            openSpiderURL("", false);
-        }
+            OpenSpiderURL("", false);
+        } else {}
     });
 
     /**
-     * @since 2023-05-15 光标定位文本框
+     * @since 2023-05-15 光标定位文本框，显示更多搜索引擎选项div
      */
     $("#search-word").on("focus", function () {
         $(".search-tip").fadeIn("slow");
     });
 
     /**
-     * @since 2023-05-11 光标离开
+     * @since 2023-05-11 光标离开，关闭更多搜索引擎选项div
      */
     $("#search-word").on("blur", function () {
         setTimeout(function (){
@@ -113,52 +113,78 @@ function spiderSearch(){
 }
 
 /**
- * @since 2023-05-15 获取搜索引擎名称
+ * @title 获取用户设置的搜索引擎
+ * @author start2004
+ * @since 2024-08-27
  */
-function getSpider(){
+async function GetSpider(){
     /**
      * @since 2023-05-15 读取缓存
+     * @since 2024-08-27 localStorage换成chrome.storage.local，过渡一下
      */
     let key = "bookmark-spider";
-    let spider = localStorage.getItem(key);
-    console.log(spider);
-
-    /**
-     * @since 2024-08-06 spider第一次不存在返回null
-     * @since 2023-05-15 默认google
-     */
-    if(typeof spider !== "string" || chrome.i18n.getMessage(spider) == ""){
-        spider = "google";
+    let spider = await GetStorage(key);
+    if(typeof spider !== "string"){
+        spider = localStorage.getItem(key);
     } else {}
-    let spiderObj = {"spider":spider, "url":chrome.i18n.getMessage(spider +"_url"), "urlSearch":chrome.i18n.getMessage(spider +"_search_url")};
+    // console.log(spider);
 
     /**
      * @return
      */
-    return spiderObj;
+    return GetSpiderObject(spider);
 }
 
 /**
- * @since 2023-05-15 设置搜索引擎
+ * @title 设置搜索引擎
+ * @author start2004
+ * @since 2024-08-27
  */
-function setSpider(spider){
+function SetSpider(spider){
     let key = "bookmark-spider";
 
     /**
      * @since 2023-05-12 更新缓存
      */
-    localStorage.setItem(key, spider);
+    SetStorage(key, spider);
 
     /**
      * @return
      */
-    return getSpider();
+    return GetSpiderObject(spider);
 }
 
 /**
- * @since 2023-05-11 打开搜索页面
+ * @title 返回搜索引擎对象
+ * @author start2004
+ * @since 2024-08-27
+ *
+ * @param {string} spider 搜索引擎名称
+ * @return {object} 搜索引擎对象
  */
-function openSpiderURL(spider, jump){
+function GetSpiderObject(spider){
+    /**
+     * @since 2024-08-06 spider第一次不存在返回null
+     * @since 2023-05-15 默认google
+     */
+    if(typeof spider !== "string" || spider =="" || chrome.i18n.getMessage(spider) == ""){
+        spider = "google";
+    } else {}
+    const spiderObj = {
+        "spider":spider,
+        "url":chrome.i18n.getMessage(spider +"_url"),
+        "urlSearch":chrome.i18n.getMessage(spider +"_search_url"),
+    };
+    // console.log(spider);
+    return spiderObj;
+}
+
+/**
+ * @title 跳转搜索页面
+ * @author start2004
+ * @since 2024-08-27
+ */
+async function OpenSpiderURL(spider, jump){
     /**
      * @since 2023-05-12 无指定搜索引擎
      */
@@ -167,13 +193,14 @@ function openSpiderURL(spider, jump){
         /**
          * @since 2023-05-12 读取缓存
          */
-        spiderObj = getSpider();
+        spiderObj = await GetSpider();
     } else {
         /**
          * @since 2023-05-12 更新缓存
          */
-        spiderObj = setSpider(spider);
+        spiderObj = SetSpider(spider);
     }
+    // console.log(spiderObj);
 
     /**
      * @since 2023-05-15 修改图片
@@ -207,49 +234,305 @@ function openSpiderURL(spider, jump){
 }
 
 /**
- * @since 2023-05-09 处理书签
+ * ===============================================================
+ * 分隔符
+ * ===============================================================
  */
-function processNode(node) {
-    let barArray = new Array();
-    let folderArray = new Array();
 
-    for(let key in node){
-        if(node[key].url){
-            barArray.push(formatData(node[key]));
+/**
+ * @title 展示书签信息
+ * @author start2004
+ * @since 2024-08-27
+ */
+async function ShowBookmarks(){
+    /**
+     * @since 2024-08-27 获取书签
+     */
+    const bookmarksArray = await GetBookmarks();
+    // console.log(bookmarksArray);
+
+    /**
+     * @since 2024-08-27 书签信息分组
+     */
+    let groupBookmarksArray = GetGroupBookmarks(bookmarksArray);
+    // console.log(groupBookmarksArray);
+
+    /**
+     * @since 2024-08-27 置顶书签，增加额外书签，chrome自带工具
+     */
+    groupBookmarksArray[0] = AddChromeToolBookmarks(groupBookmarksArray[0]);
+    // console.log(groupBookmarksArray);
+
+    /**
+     * @since 2024-08-27 获取书签代码
+     */
+    const [bookmarksHtml, hostObject] = await GetBookmarksHtml(groupBookmarksArray);
+    // console.log(bookmarksHtml);
+    // console.log(hostObject);
+    $("#container").html(bookmarksHtml);
+
+    /**
+     * @since 2024-08-27 增加监听事件
+     */
+    ListenBookmarks();
+
+    /**
+     * @since 2024-08-27 下载icon大图
+     */
+    LoadIcon(hostObject);
+}
+
+/**
+ * @title 获取书签信息
+ * @author start2004
+ * @since 2024-08-27
+ */
+function GetBookmarks() {
+    return new Promise((resolve, reject) => {
+        chrome.bookmarks.getTree(function(bookmarkTree) {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                // console.log(bookmarkTree);
+                resolve(bookmarkTree[0]["children"][0]["children"]);
+            }
+        });
+    });
+}
+
+/**
+ * @title 书签信息分组
+ * @author start2004
+ * @since 2024-08-27
+ *
+ * @param {array} bookmarksArray 初始书签信息
+ * @return {array} 书签分组信息
+ */
+function GetGroupBookmarks(bookmarksArray){
+    /**
+     * @since 2024-08-27 遍历书签，分组
+     * @since 2024-08-27 书签栏置顶书签
+     * @since 2024-08-27 书签栏一级文件夹里的书签
+     */
+    let groupBookmarksArray = new Array();
+    groupBookmarksArray.push({
+        "groupName": "", // 置顶书签
+        "bookmarks": new Array(),
+    });
+    for(let i in bookmarksArray){
+        let bArray = bookmarksArray[i];
+
+        /**
+         * @since 2024-08-27 书签栏置顶书签
+         */
+        if(bArray["children"] === undefined){
+            groupBookmarksArray[0]["bookmarks"].push({
+                "title": bArray["title"],
+                "url": bArray["url"],
+            });
         } else {
-            let title = node[key].title;
-            folderArray[title] = processNodeChild(node[key].children);
+            /**
+             * @since 2024-08-27 书签栏一级文件夹
+             */
+            let folderName = bArray["title"];
+            let gArray = new Array();
+            let cArray = bArray["children"];
+            for(let j in cArray){
+                if(cArray[j]["children"] === undefined){
+                    gArray.push({
+                        "title": cArray[j]["title"],
+                        "url": cArray[j]["url"],
+                    });
+                } else {
+                    /**
+                     * @since 2024-08-27 二级文件夹，暂未处理
+                     */
+                }
+            }
+
+            /**
+             * @since 2024-08-27 存在书签信息
+             */
+            if(gArray.length > 0){
+                groupBookmarksArray.push({
+                    "groupName": folderName,
+                    "bookmarks": gArray,
+                });
+            } else {}
         }
     }
 
+    return groupBookmarksArray;
+}
+
+/**
+ * @title 添加Chrome浏览器工具书签
+ * @author start2004
+ * @since 2024-08-27
+ *
+ * @param {object} topBookmarksObject 置顶书签对象
+ * @return {object}
+ */
+function AddChromeToolBookmarks(topBookmarksObject){
     /**
-     * @since 2023-05-09 渲染数据模板
+     * @since 2024-08-27 chrome工具
      */
-    _mainTemplateHtml_ = $("#main").prop("outerHTML");
-    _bookmarkTemplateHtml_ = $("#bookmark").html();
-    $("#main").hide();
+    const chromeToolArray = new Array(
+        {
+            title: chrome.i18n.getMessage("extension_store"), // 应用商店
+            url: chrome.i18n.getMessage("extension_store_url")
+        },
+        {
+            title: chrome.i18n.getMessage("extension"), // 扩展
+            url: 'chrome://extensions/'
+        },
+        {
+            title: chrome.i18n.getMessage("favorites"), // 书签
+            url: 'chrome://bookmarks/'
+        },
+        {
+            title: chrome.i18n.getMessage("apps"), // 应用
+            url: 'chrome://apps/'
+        },
+        {
+            title: chrome.i18n.getMessage("settings"), // 设置
+            url: 'chrome://settings/profiles'
+        },
+        {
+            title: chrome.i18n.getMessage("downloads"), // 下载记录
+            url: 'chrome://downloads'
+        },
+        {
+            title: chrome.i18n.getMessage("history"), // 历史记录
+            url: 'chrome://history'
+        },
+        {
+            title: chrome.i18n.getMessage("clear_browser_data"), // 删除浏览数据
+            url: 'chrome://settings/clearBrowserData'
+        },
+        {
+            title: chrome.i18n.getMessage("version"), // 版本
+            url: 'chrome://settings/help'
+        }
+    );
+
+    for(let i=0; i<chromeToolArray.length; i++){
+        topBookmarksObject["bookmarks"].push(chromeToolArray[i]);
+    }
+    return topBookmarksObject;
+}
+
+/**
+ * @title 获取标签代码
+ * @author start2004
+ * @since 2024-08-27
+ *
+ * @param {array} groupBookmarksArray 书签信息
+ * @return {string} 拼接好的书签html代码
+ */
+async function GetBookmarksHtml(groupBookmarksArray){
+    /**
+     * @since 2024-08-26 模板
+     */
+    const mainTemplateHtml = '<div class="main"><h4>{$groupName}</h4><ul id="bookmark" class="list-inline">&nbsp;</ul></div>',
+        bookmarkTemplateHtml = '<li><a href="{$url}"><div><img src="{$icon}" width="32" height="32" class="img-rounded center-block bookmark-image icon-{$host}"></div><div class="link_text">{$title}</div></a></li>';
 
     /**
-     * @since 2023-05-10 书签栏增加额外
+     * @since 2024-08-27 当前时间
      */
-    barArray = improveChromeBookmark(barArray);
+    const currentTime = parseInt(new Date().getTime()/1000);
 
     /**
-     * @since 2023-05-10 固定书签栏
+     * @since 2024-08-27 遍历分组
      */
-    addBookmark('', barArray);
+    let groupHtmlArray = new Array(), hostObject = {};
+    for(let i in groupBookmarksArray){
+        let html, htmlArray = new Array();
 
-    /**
-     * @since 2023-05-10 其他书签文件夹
-     */
-    for(let title in folderArray){
-        addBookmark(title, folderArray[title]);
+        /**
+         * @since 2024-08-27 遍历组内书签
+         */
+        for(let j in groupBookmarksArray[i]["bookmarks"]){
+            let bookmarkObject = groupBookmarksArray[i]["bookmarks"][j];
+
+            /**
+             * @since 2024-08-27 获取host
+             * @since 2024-08-27 获取缓存大图icon
+             */
+            const urlObject = new URL(bookmarkObject["url"]);
+            let icon = "";
+            if(urlObject["protocol"] == "http:" || urlObject["protocol"] == "https:"){
+                let host = urlObject.host;
+                bookmarkObject["host"] = host.replaceAll(".", "-");
+
+                /**
+                 * @since 2024-08-27 读取缓存
+                 */
+                let iconObject = await GetStorage("icon:"+host);
+                // console.log(iconObject);
+                if(iconObject !== undefined){
+                    icon = iconObject["base64String"];
+
+                    /**
+                     * @since 2024-08-27 超过30天，更新icon
+                     */
+                    if(currentTime-iconObject["updateTime"] >= 30*86400){
+                        hostObject[host] = true;
+                    } else {}
+                } else {
+                    hostObject[host] = true;
+                }
+            } else {
+                bookmarkObject["host"] = "";
+            }
+
+            /**
+             * @since 2023-05-09 处理图标
+             * @since 2023-05-10 获取网站的favicon
+             */
+            if(icon == ""){
+                const iconURL = new URL(chrome.runtime.getURL("/_favicon/"));
+                iconURL.searchParams.set("pageUrl",bookmarkObject["url"]);
+                iconURL.searchParams.set("size", "32");
+                icon = iconURL.toString();
+            } else {}
+            bookmarkObject["icon"] = icon;
+
+            /**
+             * @since 2024-08-27 替换key
+             */
+            html = bookmarkTemplateHtml;
+            for(let k in bookmarkObject){
+                html = html.replaceAll("{$"+ k +"}", bookmarkObject[k]);
+            }
+            htmlArray.push(html);
+        }
+
+        /**
+         * @since 2024-08-27 一组书签的html代码
+         */
+        html = mainTemplateHtml;
+        html = html.replace("&nbsp;", htmlArray.join(""));
+        html = html.replace("{$groupName}", groupBookmarksArray[i]["groupName"]);
+        groupHtmlArray.push(html);
     }
 
     /**
+     * @since 2024-08-27 拼接html代码
+     */
+    return [groupHtmlArray.join(""), hostObject];
+}
+
+/**
+ * @title 书签增加监听事件
+ * @author start2004
+ * @since 2024-08-27
+ */
+function ListenBookmarks(){
+    /**
      * @since 2023-05-10 监听a标签点击
      */
-    $("#main a").on("click", function() {
+    $("#container a").on("click", function() {
         url = this.href;
         if(url.substr(0, 4) == "http"){
             return true;
@@ -262,7 +545,7 @@ function processNode(node) {
     /**
      * @since 2023-05-16 鼠标放上，修改背景图突出
      */
-    $("#main li").hover(function() {
+    $("#container li").hover(function() {
         $(this).css("background-color","#e0ffff");
 
         /**
@@ -277,131 +560,73 @@ function processNode(node) {
         $(this).find("div:eq(0)").css("display", "");
     });
 
-
-    $("#bookmark").sortable({
-        revert: true
-    });
+    /**
+     * @since 2024-08-27 禁止选中，防止多选，效果不好看
+     */
     $("ul, li").disableSelection();
-
-    /**
-     * @since 2023-05-12 显示书签和底部
-     */
-    $("#container").show();
-    $(".foot").show();
 }
 
 /**
- * @since 2023-05-09 处理书签栏的文件夹
+ * @title 下载icon大图
+ * @author start2004
+ * @since 2024-08-27
+ *
+ * @param {object} hostObject 域名数组
  */
-function processNodeChild(node) {
-    let barArray = new Array();
-
-    for(let key in node){
-        if(node[key].url){
-            barArray.push(formatData(node[key]));
-        } else {
-            /**
-             * @since 2023-05-09 二级文件夹不再处理
-             */
-        }
-    }
-
-    return barArray;
+function LoadIcon(hostObject){
+    const len = Object.keys(hostObject).length;
+    if(len > 0){
+        /**
+         * @since 2024-08-27 通知background.js下载icon大图
+         */
+        chrome.runtime.sendMessage({type: "LoadIcon", payload: hostObject}, function(response) {
+            // console.log("Received response:", response);
+        });
+    } else {}
 }
 
 /**
- * @since 2023-05-09 格式化数据
+ * ===============================================================
+ * 分隔符
+ * ===============================================================
  */
-function formatData(node){
-    let data = new Array();
-    let url = node.url;
-    data.title = node.title;
-    data.url = url;
 
-    /**
-     * @since 2023-05-09 处理图标
-     * @since 2023-05-10 获取网站的favicon
-     */
-    const chromeURL = new URL(chrome.runtime.getURL("/_favicon/"));
-    chromeURL.searchParams.set("pageUrl",url);
-    chromeURL.searchParams.set("size", "32");
-    data.icon = chromeURL.toString();
-
-    return data;
-}
 
 /**
- * @since 2023-05-10 添加书签展现html
+ * @title 更新缓存
+ * @author start2004
+ * @since 2024-08-14
+ *
+ * @param  {string} key 键值
+ * @param {string|object} data 缓存数据
  */
-function addBookmark(groupName, bookmarkArray){
-    /**
-     * @since 2023-05-10 书签列表
-     */
-    let bookmarkHtmlArray = new Array();
-    for(let key in bookmarkArray){
-        let bookmarkHtml = _bookmarkTemplateHtml_.replace(new RegExp("{\\$url}", "g"), bookmarkArray[key].url);
-        bookmarkHtml = bookmarkHtml.replace(new RegExp("{\\$icon}", "g"), bookmarkArray[key].icon);
-        bookmarkHtml = bookmarkHtml.replace(new RegExp("{\\$title}", "g"), bookmarkArray[key].title);
-        bookmarkHtml = bookmarkHtml.replace('[img', '<img');
-        bookmarkHtml = bookmarkHtml.replace(']</div>', '></div>');
-        bookmarkHtmlArray.push(bookmarkHtml);
-    }
-    html = bookmarkHtmlArray.join('');
-
-    /**
-     * @since 2023-05-10 添加html
-     */
-    let mainHtml = _mainTemplateHtml_.replace(_bookmarkTemplateHtml_, html);
-    mainHtml = mainHtml.replace('<h4>{$groupName}</h4>', "<h4>"+ groupName +"</h4>");
-    $("#container").append(mainHtml);
-}
-
-/**
- * @since 2023-05-10 增加Chrome浏览器系统地址
- */
-function improveChromeBookmark(bookmarkArray){
-    let chromeArray = new Array(
-        {
-                title: chrome.i18n.getMessage("extension_store"),
-                url: chrome.i18n.getMessage("extension_store_url")
-            },
-            {
-                title: chrome.i18n.getMessage("extension"),
-                url: 'chrome://extensions/'
-            },
-            {
-                title: chrome.i18n.getMessage("favorites"),
-                url: 'chrome://bookmarks/'
-            },
-            {
-                title: chrome.i18n.getMessage("apps"),
-                url: 'chrome://apps/'
-            },
-            {
-                title: chrome.i18n.getMessage("settings"),
-                url: 'chrome://settings/profiles'
-            },
-            {
-                title: chrome.i18n.getMessage("downloads"),
-                url: 'chrome://downloads'
-            },
-            {
-                title: chrome.i18n.getMessage("history"),
-                url: 'chrome://history'
-            },
-            {
-                title: chrome.i18n.getMessage("clear_browser_data"),
-                url: 'chrome://settings/clearBrowserData'
-            },
-            {
-                title: chrome.i18n.getMessage("version"),
-                url: 'chrome://settings/help'
+function SetStorage(key, value) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.set({ [key]: value }, () => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve();
             }
-    );
+        });
+    });
+}
 
-    for(let i=0; i<chromeArray.length; i=i+1){
-        bookmarkArray.push(formatData(chromeArray[i]));
-    }
-
-    return bookmarkArray;
+/**
+ * @title 获取缓存
+ * @author start2004
+ * @since 2024-08-14
+ *
+ * @return {mixed} 缓存数据
+ */
+function GetStorage(key) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(key, (result) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+            } else {
+                resolve(result[key]);
+            }
+        });
+    });
 }

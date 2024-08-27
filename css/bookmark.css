@@ -1,9 +1,8 @@
 #container {
     width: 100%;
-    display: none;
 }
 
-#main{
+.main{
     padding-top: 10px;
     padding-left: 100px;
     padding-right: 40px;
@@ -11,11 +10,11 @@
     width: 100%;
 }
 
-#main h4{
+.main h4{
     margin-top: 0px;
 }
 
-#main li{
+.main li{
     margin-bottom: 10px;
 }
 
